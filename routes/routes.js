@@ -2,8 +2,21 @@
 const express = require('express');
 const { route } = require('express/lib/application');
 const router = new express.Router();
+const multer = require('multer');
+const csv = require('fast-csv');
+const fs = require('fs');
+
+const upload = multer({ dest: 'temp/csv/' });
 
 const db = require('../connection/DBConnection')
+
+const { dataBeautify } = require('../utilities/util')
+
+var global = []
+
+const saveGlobal = (data) => {
+  global = data
+}
 
 /**
  * Route "/leads" TYPE:- GET
@@ -12,6 +25,7 @@ const db = require('../connection/DBConnection')
 router.get('/leads', async (req, res) => {
   await db.promise().query(`SELECT * FROM leads;`)
     .then(data => {
+      saveGlobal(data[0])
       res.status(200).send(data[0])
     })
     .catch(err => {
@@ -44,15 +58,15 @@ router.post('/leads', async (req, res) => {
   console.log(req.body)
   const { id, title, firstName, lastName, email } = req.body
   if (id && title && firstName && lastName && email) {
-    try {
-      db.promise().query(`INSERT INTO leads VALUES(${id}, '${title}', '${firstName}', '${lastName}', '${email}' ); `)
-      res.send({ 'msg': 'Data updated successfully' }).status(201)
-    }
-    catch (err) {
-      res.send(err)
-    }
+    await db.promise().query(`INSERT INTO leads VALUES(${id}, '${title}', '${firstName}', '${lastName}', '${email}' ); `)
+      .then(data => {
+        res.status(200).send({ 'msg': "Data Updated Successfully" }, data)
+      })
+      .catch(err => {
+        res.status(404).send({ "msg": err })
+      })
   } else {
-    console.log("some thing is missing")
+    res.status(404).send({ 'msg': "Missing Data" })
   }
 })
 
@@ -60,9 +74,58 @@ router.post('/leads', async (req, res) => {
  * Route "/leads/bulk" TYPE:- POST -> accepts CSV file in body
  * @returns report of file upload in JSON or you can download the CSV report.
  */
-router.post('/leads/bulk', async (req, res) => {
-  const body = req.body
-  res.send(body)
+router.post('/leads/bulk', upload.single('file'), async (req, res) => {
+  const path = req.file?.path
+  var fileRows = []
+  if (path) {
+    csv.parseFile(path)
+      .on("data", function (data) {
+        fileRows.push(data)
+      })
+      .on("end", async function () {
+        if (fileRows.length > 0) {
+          await db.promise().query(`SELECT * FROM leads;`)
+            .then(data => {
+              saveGlobal(data[0])
+            })
+            .catch(err => {
+              res.status(500).send(err)
+            })
+          let result = dataBeautify(fileRows, global)
+          var finalArray = result[0].map(function (obj) {
+            return [obj.id, obj.title, obj.firstName, obj.lastName, obj.email];
+          });
+          if (finalArray.length > 0) {
+            await db.promise().query("INSERT INTO leads VALUES ?;", [finalArray])
+              .then(data => {
+                res.status(200).send({
+                  "created": result[0].length,
+                  "duplicates": result[1].length + result[3].length,
+                  "error": result[2].length,
+                  "report": "link"
+                })
+              })
+              .catch(err => {
+                res.status(404).send(err)
+              })
+          } else {
+            res.status(200).send({
+              "created": result[0].length,
+              "duplicates": result[1].length + result[3].length,
+              "error": result[2].length,
+              "report": "link"
+            })
+          }
+        }
+        else {
+          res.status(404).send({ "msg": "Empty Csv found" })
+        }
+        fs.unlinkSync(path)
+      })
+  }
+  else {
+    res.status(404).send({ "msg": "File not found" })
+  }
 })
 
 /**

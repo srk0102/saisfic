@@ -13,8 +13,8 @@ Open [http://localhost:5000](http://localhost:5000) to view it in your browser.
 
 ## DB connection
 
-We used sqlite as a database.
-If you want to connect your DB.
+We used sqlite as a database.\
+If you want to connect your DB.\
 use DBURI file and change value according your details.
 
 ## Available API End Points.
