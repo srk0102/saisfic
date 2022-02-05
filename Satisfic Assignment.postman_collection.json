@@ -186,6 +186,13 @@
 					"path": [
 						"leads",
 						"2"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null,
+							"disabled": true
+						}
 					]
 				},
 				"description": "You can delete row with id number"
