@@ -5,10 +5,12 @@ This project is just for the assignment purpose and to know how the crm developm
 ## NOTE
 
 IF YOU ARE RUNNING THIS PROJECT FOR THE FIRST TIME PLEASE FOLLOW THESE STEPS.
--> DB INSTALLATION SETUP: [https://www.youtube.com/watch?v=VAC_gmQZ_ws](https://www.youtube.com/watch?v=VAC_gmQZ_ws)
--> DB CONNECTION: open DBURI.js file in root directory and fill your details
--> Add Table to DB: open db.txt and copy the whole command and use that to create a table.
--> Installing Node Modules: Open cmd to file path and press `npm install`
+-> DB INSTALLATION SETUP: [https://www.youtube.com/watch?v=VAC_gmQZ_ws](https://www.youtube.com/watch?v=VAC_gmQZ_ws) \
+-> DB CONNECTION: open DBURI.js file in root directory and fill your details. \
+-> Add Table to DB: open db.txt and copy the whole command and use that to create a table. \
+-> Installing Node Modules: Open cmd to file path and press `npm install`. \
+-> YOU CAN FIND POST MAN COLLECTION IN ROOT FOLDER. \
+-> If your facing any error with npm install delete package-lock.json and do same cmd again. \
 
 #### NOW YOU CAN RUN THIS PROJECT FINE
 
