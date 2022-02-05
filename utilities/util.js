@@ -1,10 +1,10 @@
 const parse = require("nodemon/lib/cli/parse");
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
 const removeDuplicates = (arr) => {
   Array.prototype.getDuplicates = function () {
     var duplicatesId = {};
     var duplicatesEmail = {};
-    var dup = []
     for (var i = 0; i < this.length; i++) {
       if (duplicatesId.hasOwnProperty(this[i].id)) {
         duplicatesId[this[i].id].push(i);
@@ -24,15 +24,21 @@ const removeDuplicates = (arr) => {
   res = [...Object.values(res[0]), ...Object.values(res[1])]
   let dup = []
   let original = []
+  let removeIndex = []
   for (let i of Object.values(res)) {
     if (i.length > 1) {
       for (let j of i) {
         dup.push(arr[j])
       }
-    } else if (i.length === 1) {
+    } else {
       for (let k of i) {
         original.push(arr[k])
       }
+    }
+  }
+  if (removeIndex.length > 0) {
+    for (let i of removeIndex) {
+      original.splice(i, 1)
     }
   }
   dup = [...new Set(dup)];
@@ -58,8 +64,8 @@ const removeErrors = (arr) => {
 }
 
 const compareData = (data, DbData) => {
-  const dups = DbData.filter((el) => {
-    return data.every((f) => {
+  const dups = data.filter((el) => {
+    return DbData.some((f) => {
       return f.id === el.id || f.email === el.email;
     });
   });
@@ -89,8 +95,43 @@ const dataBeautify = (data, DBData) => {
   let raw = compareData(res, DBData)
   let cleanData = removeErrors(raw[0])
   let sol = removeDuplicates(cleanData[0])
-  let returnArray = [...sol, cleanData[1], raw[1]]
+  let returnArray = [...sol, cleanData[1], raw[1], head]
   return returnArray;
 }
 
-module.exports = { dataBeautify }
+const findIdInDB = (data, id) => {
+  for (let i of data) {
+    if (Object.values(i).includes(id)) {
+      return true
+    }
+  }
+  return false
+}
+
+const findEmailInDB = (data, email) => {
+  for (let i of data) {
+    if (Object.values(i).includes(email)) {
+      return true
+    }
+  }
+  return false
+}
+
+const csvFileCreator = (data) => {
+  const f = data.shift()
+  let head = []
+  for (let i of f) {
+    head.push({ id: i, title: i })
+  }
+  let rows = [...data]
+  const csvWriter = createCsvWriter({
+    path: 'C:/Users/srk/Desktop/saisfic/downloads/download.csv',
+    header: head
+  })
+  csvWriter.writeRecords(rows)
+    .then(() => {
+      console.log('created')
+    })
+}
+
+module.exports = { dataBeautify, findIdInDB, findEmailInDB, csvFileCreator }

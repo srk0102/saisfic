@@ -10,7 +10,8 @@ const upload = multer({ dest: 'temp/csv/' });
 
 const db = require('../connection/DBConnection')
 
-const { dataBeautify } = require('../utilities/util')
+const { dataBeautify, csvFileCreator } = require('../utilities/util')
+const { checkData, checkBody } = require('../middlewares/middleware')
 
 var global = []
 
@@ -25,7 +26,6 @@ const saveGlobal = (data) => {
 router.get('/leads', async (req, res) => {
   await db.promise().query(`SELECT * FROM leads;`)
     .then(data => {
-      saveGlobal(data[0])
       res.status(200).send(data[0])
     })
     .catch(err => {
@@ -38,7 +38,7 @@ router.get('/leads', async (req, res) => {
  * @returns the particular id lead that given in params.
  */
 router.get('/leads/:id', async (req, res) => {
-  const id = req.params.id
+  const id = parseInt(req.params.id)
   if (id) {
     await db.promise().query(`SELECT * FROM leads WHERE id = ${id} ;`)
       .then(data => {
@@ -47,6 +47,8 @@ router.get('/leads/:id', async (req, res) => {
       .catch(err => {
         res.status(500).send(err)
       })
+  } else {
+    res.status(404).send("Id missing")
   }
 })
 
@@ -55,7 +57,7 @@ router.get('/leads/:id', async (req, res) => {
  * @returns 201 on successful creation, 409 conflict on duplication.
  */
 router.post('/leads', async (req, res) => {
-  console.log(req.body)
+
   const { id, title, firstName, lastName, email } = req.body
   if (id && title && firstName && lastName && email) {
     await db.promise().query(`INSERT INTO leads VALUES(${id}, '${title}', '${firstName}', '${lastName}', '${email}' ); `)
@@ -92,6 +94,7 @@ router.post('/leads/bulk', upload.single('file'), async (req, res) => {
               res.status(500).send(err)
             })
           let result = dataBeautify(fileRows, global)
+          csvFileCreator([result[4], ...result[1], ...result[2], ...result[3]])
           var finalArray = result[0].map(function (obj) {
             return [obj.id, obj.title, obj.firstName, obj.lastName, obj.email];
           });
@@ -102,8 +105,10 @@ router.post('/leads/bulk', upload.single('file'), async (req, res) => {
                   "created": result[0].length,
                   "duplicates": result[1].length + result[3].length,
                   "error": result[2].length,
-                  "report": "link"
+                  "report": "/download"
                 })
+                console.log("sfsvs")
+                fs.unlinkSync(path)
               })
               .catch(err => {
                 res.status(404).send(err)
@@ -113,14 +118,15 @@ router.post('/leads/bulk', upload.single('file'), async (req, res) => {
               "created": result[0].length,
               "duplicates": result[1].length + result[3].length,
               "error": result[2].length,
-              "report": "link"
+              "report": "/download"
             })
+            fs.unlinkSync(path)
           }
         }
         else {
+          fs.unlinkSync(path)
           res.status(404).send({ "msg": "Empty Csv found" })
         }
-        fs.unlinkSync(path)
       })
   }
   else {
@@ -132,18 +138,43 @@ router.post('/leads/bulk', upload.single('file'), async (req, res) => {
  * Route "/leads/:id" TYPE:- PATCH -> accepts body with JSON.
  * @returns 202 status if lead is updated or else 204 id not found.
  */
-router.patch('/leads/:id', async (req, res) => {
-  const id = req.params.id
-  res.send(id)
+router.patch('/leads/:id', checkData, async (req, res) => {
+  const id = parseInt(req.params.id)
+  const body = req.body
+  if (id && body) {
+    const columns = Object.keys(body);
+    const values = Object.values(body);
+    await db.promise().query('UPDATE leads SET ? WHERE id = ?', [body, id])
+      .then(data => {
+        res.status(200).send(data[0])
+      })
+      .catch(err => {
+        res.status(304).send(err)
+      })
+  } else {
+    res.status(404).send({ "msg": "Missing id" })
+  }
 })
 
 /**
  * Route "/leads/bulk" TYPE:- PATCH -> accepts body with JSON.
  * @returns 200 status if leads are updated or else 204 id not found.
  */
-router.patch('/leads/bulk', async (req, res) => {
-  const body = req.body
-  res.send(body)
+router.patch('/leads/patch/bulk', checkBody, async (req, res) => {
+  let body = req.body
+  const id = body.id
+  delete body.id
+  if (body) {
+    await db.promise().query('UPDATE leads SET ? WHERE id in (?)', [body, id])
+      .then(data => {
+        res.status(200).send(data)
+      })
+      .catch(err => {
+        res.status(404).send(err)
+      })
+  } else {
+    res.status(404).send("No data to Modify")
+  }
 })
 
 /**
@@ -151,9 +182,24 @@ router.patch('/leads/bulk', async (req, res) => {
  * @returns 200 status if lead got deleted or else 204 if id not found.
  */
 router.delete('/leads/:id', async (req, res) => {
-  const id = req.params.id
-  res.send(id)
+  const id = parseInt(req.params.id)
+  if (id) {
+    await db.promise().query(`DELETE FROM leads WHERE id = ${id} ;`)
+      .then(data => {
+        res.status(200).send(data[0])
+      })
+      .catch(err => {
+        res.status(500).send(err)
+      })
+  } else {
+    res.status(404).send("Id missing")
+  }
 })
+
+router.get('/download', function(req, res){
+  const file = `C:/Users/srk/Desktop/saisfic/downloads/download.csv`;
+  res.download(file); // Set disposition and send it.
+});
 
 //Exporting the routes
 module.exports = router;
