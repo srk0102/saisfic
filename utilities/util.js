@@ -28,6 +28,7 @@ const removeDuplicates = (arr) => {
   for (let i of Object.values(res)) {
     if (i.length > 1) {
       for (let j of i) {
+        removeIndex.push(j)
         dup.push(arr[j])
       }
     } else {

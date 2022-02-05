@@ -1,0 +1,196 @@
+{
+	"info": {
+		"_postman_id": "f8da61fa-e502-422b-9bac-8f3a74d5b7e0",
+		"name": "Satisfic Assignment",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "GET request to get all leads",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": []
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:5000/leads",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"leads"
+					]
+				},
+				"description": "This will return all leads that are saved in Data Base in json format."
+			},
+			"response": []
+		},
+		{
+			"name": "GET request to get particular lead by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/leads/2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"leads",
+						"2"
+					]
+				},
+				"description": "This will return leads by particular id given in URL.\n\nUser need to give the id in URL as shown in below example.\n\nEg :-\n\nhttp://localhost:5000/leads/1\n\nreturns lead whose id is 1.\n\nhttp://localhost:5000/leads/2\n\nreturns lead whose id is 2."
+			},
+			"response": []
+		},
+		{
+			"name": "POST request to add data to DB",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/leads",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"leads"
+					]
+				},
+				"description": "You can post data into DB.\n\nThis post request accepts only json format.\n\nTo use this request you need to choose raw under the body section and select type json to post data.\n\nbody -> raw -> json.\n\nexample:-\n\n{\n\n\"email\" : \"[srk@gmail.com](mailto:srk@gmail.com)\",\n\n\"Name\" : \"Siva Rama Krishna\",\n\n\"Age\" : 22,\n\n}"
+			},
+			"response": []
+		},
+		{
+			"name": "POST request to add bulk data to DB",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Users/srk/Downloads/Untitled spreadsheet - Sheet1 (2).csv"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:5000/leads/bulk",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"leads",
+						"bulk"
+					]
+				},
+				"description": "You need to send csv for this"
+			},
+			"response": []
+		},
+		{
+			"name": "PATCH  request to update perticular row in db",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/leads/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"leads",
+						"1"
+					]
+				},
+				"description": "you can update values using id but if there any duplicates it will raise an error."
+			},
+			"response": []
+		},
+		{
+			"name": "PATCH request to update variuos ids at a time",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\":[2,3],\r\n    \"title\": \"dummy\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/leads/patch/bulk",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"leads",
+						"patch",
+						"bulk"
+					]
+				},
+				"description": "{  \n\"id\":\\[2,3\\],  \n\"title\": \"dummy\"  \n}\n\nbody type should be given this type. It will update data of 2,3 with title dummy."
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE request to delete perticular lead using id",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/leads/2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"leads",
+						"2"
+					]
+				},
+				"description": "You can delete row with id number"
+			},
+			"response": []
+		}
+	]
+}

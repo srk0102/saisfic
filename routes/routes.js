@@ -196,7 +196,7 @@ router.delete('/leads/:id', async (req, res) => {
   }
 })
 
-router.get('/download', function(req, res){
+router.get('/download', function (req, res) {
   const file = `C:/Users/srk/Desktop/saisfic/downloads/download.csv`;
   res.download(file); // Set disposition and send it.
 });
